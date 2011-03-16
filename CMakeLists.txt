@@ -44,6 +44,9 @@ macro_log_feature(QJSON_FOUND "QJson" "Qt library that maps JSON data to QVarian
 macro_optional_find_package(Taglib 1.6.0)
 macro_log_feature(TAGLIB_FOUND "TagLib" "Audio Meta-Data Library" "http://developer.kde.org/~wheeler/taglib.html" TRUE "" "taglib is needed for reading meta data from audio files")
 
+macro_optional_find_package(Phonon)
+macro_log_feature(PHONON_FOUND "Phonon" "Audio Abstraction Layer" "http://projects.kde.org/phonon" TRUE "" "Phonon is used for playing back the music")
+
 # we need pthreads too
 find_package(Threads)
 
@@ -79,11 +82,6 @@ ENDIF( ENABLE_JREEN)
 macro_log_feature(GLOOX_FOUND "Gloox" "A portable high-level Jabber/XMPP library for C++" "http://camaya.net/gloox" FALSE "" "Gloox is needed for the Jabber SIP plugin and the XMPP-Bot")
 #show dep log
 macro_display_feature_log()
-MESSAGE("WARNING!")
-MESSAGE("Phonon is going to replace our own audio abstraction layer soon so we didn't")
-MESSAGE("add checks for libmad, libvorbis and libflac. Make sure they are installed!")
-MESSAGE("")
-MESSAGE("-----------------------------------------------------------------------------")
 
 IF( NOT APPLE )
     # Make linking as strict on linux as it is on osx. Then we don't break linking on mac so often
