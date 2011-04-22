@@ -92,19 +92,6 @@ private:
     bool presenceMeansOnline( Jreen::Presence::Type p );
     void handlePeerStatus( const Jreen::JID &jid, Jreen::Presence::Type presenceType );
 
-    Jreen::Client *m_client;
-    Jreen::MUCRoom *m_room;
-    Jreen::SimpleRoster *m_roster;
-    Jreen::JID m_jid;
-    QMap<Jreen::Presence::Type, QString> m_presences;
-    QMap<QString, Jreen::Presence::Type> m_peers;
-    QString m_server;
-
-    enum IqContext { NoContext, RequestDisco, RequestedDisco, SipMessageSent, RequestedVCard };
-
-    QStringList m_legacy_peers;
-
-    AvatarManager *m_avatarManager;
 };
 
 #endif // JABBER_H
