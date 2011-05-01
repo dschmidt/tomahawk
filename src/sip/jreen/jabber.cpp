@@ -303,7 +303,7 @@ JabberPlugin::onDisconnect( Jreen::Client::DisconnectReason reason )
     removeMenuHelper();
 
     if(reconnect)
-        QTimer::singleShot(reconnectInSeconds*1000, m_client, SLOT(connectPlugin()));
+        QTimer::singleShot(reconnectInSeconds*1000, this, SLOT(connectPlugin()));
 
     m_connected = false;
 }
