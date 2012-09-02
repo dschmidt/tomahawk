@@ -81,7 +81,7 @@ DiagnosticsDialog::updateLogView()
         log.append( "      visible: false\n" );
     }
 
-    log.append( "ACCOUNTS:\n" );
+    log.append( "\nACCOUNTS:\n" );
 
     const QList< Tomahawk::source_ptr > sources = SourceList::instance()->sources( true );
     const QList< Tomahawk::Accounts::Account* > accounts = Tomahawk::Accounts::AccountManager::instance()->accounts( Tomahawk::Accounts::SipType );
@@ -163,20 +163,20 @@ DiagnosticsDialog::accountLog( Tomahawk::Accounts::Account* account )
         else if ( sipInfo.isVisible() )
         {
             accountInfo.append(
-                QString("       %1: %2:%3 " /*%4*/ /*" (%5)"*/ "\n")
+                QString("       %1: %2:%3 " /*%4*/ " (%5)" "\n")
                     .arg( peerInfo->id() )
                     .arg( sipInfo.host() )
                     .arg( sipInfo.port() )
-//                     .arg( versionString )
+                    .arg( peerInfo->versionString() )
                     // .arg( connected ? "connected" : "not connected")
             );
         }
         else
         {
             accountInfo.append(
-                QString("       %1: visible: false " /*"%2 (%3)"*/ "\n")
+                QString("       %1: visible: false " /*"%2"*/ "(%3)\n")
                     .arg( peerInfo->id() )
-//                     .arg( versionString )
+                    .arg( peerInfo->versionString() )
                     // .arg( connected ? "connected" : "not connected")
             );
         }

@@ -48,8 +48,12 @@ public:
     void setFriendlyName( const QString& friendlyName );
     const QString friendlyName() const;
 
+    void setVersionString( const QString& versionString );
+    const QString versionString() const;
+
     void setAvatar( const QPixmap& avatar );
     const QPixmap avatar( TomahawkUtils::AvatarStyle style, const QSize& size ) const;
+
 
 signals:
     void sipInfoChanged();
@@ -59,6 +63,7 @@ private:
 
     SipInfo m_sipInfo;
     QString m_friendlyName;
+    QString m_versionString;
 
     mutable QPixmap* m_avatar;
     mutable QPixmap* m_fancyAvatar;

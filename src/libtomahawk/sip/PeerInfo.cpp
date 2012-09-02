@@ -91,6 +91,20 @@ PeerInfo::friendlyName() const
 
 
 void
+PeerInfo::setVersionString( const QString& versionString )
+{
+    m_versionString = versionString;
+}
+
+
+const QString
+PeerInfo::versionString() const
+{
+    return m_versionString;
+}
+
+
+void
 PeerInfo::setAvatar( const QPixmap& avatar )
 {
     delete m_avatar;

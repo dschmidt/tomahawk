@@ -862,7 +862,9 @@ XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
         {
             QString versionString = QString( "%1 %2 %3" ).arg( softwareVersion->name(), softwareVersion->os(), softwareVersion->version() );
             qDebug() << Q_FUNC_INFO << "Received software version for" << iq.from().full() << ":" << versionString;
-//             emit softwareVersionReceived( iq.from().full(), versionString );
+            PeerInfo* peerInfo = peerInfoForId( iq.from().full() );
+            if( peerInfo )
+                peerInfo->setVersionString( versionString );
         }
     }
     else if ( context == RequestedDisco )
