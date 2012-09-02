@@ -197,7 +197,7 @@ SourceItem::icon() const
         if ( m_source->avatar().isNull() )
             return m_defaultAvatar;
         else
-            return m_source->avatar( Source::FancyStyle );
+            return m_source->avatar( TomahawkUtils::AvatarStyleFancy );
     }
 }
 

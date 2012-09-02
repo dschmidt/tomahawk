@@ -29,12 +29,14 @@
 #include "sip/SipHandler.h"
 #include "utils/Logger.h"
 
+#include "sip/PeerInfo.h"
+
 #define TCP_TIMEOUT 600
 
 using namespace Tomahawk;
 
 
-ControlConnection::ControlConnection( Servent* parent, const QHostAddress &ha )
+ControlConnection::ControlConnection( Servent* parent )
     : Connection( parent )
     , m_dbsyncconn( 0 )
     , m_registered( false )
@@ -48,38 +50,6 @@ ControlConnection::ControlConnection( Servent* parent, const QHostAddress &ha )
 
     this->setMsgProcessorModeIn( MsgProcessor::UNCOMPRESS_ALL | MsgProcessor::PARSE_JSON );
     this->setMsgProcessorModeOut( MsgProcessor::COMPRESS_IF_LARGE );
-
-    m_peerIpAddress = ha;
-}
-
-
-ControlConnection::ControlConnection( Servent* parent, const QString &ha )
-    : Connection( parent )
-    , m_dbsyncconn( 0 )
-    , m_registered( false )
-    , m_pingtimer( 0 )
-{
-    qDebug() << "CTOR controlconnection";
-    setId("ControlConnection()");
-
-    // auto delete when connection closes:
-    connect( this, SIGNAL( finished() ), SLOT( deleteLater() ) );
-
-    this->setMsgProcessorModeIn( MsgProcessor::UNCOMPRESS_ALL | MsgProcessor::PARSE_JSON );
-    this->setMsgProcessorModeOut( MsgProcessor::COMPRESS_IF_LARGE );
-
-    if ( !ha.isEmpty() )
-    {
-        QHostAddress qha( ha );
-        if ( !qha.isNull() )
-            m_peerIpAddress = qha;
-        else
-        {
-            QHostInfo qhi = QHostInfo::fromName( ha );
-            if ( !qhi.addresses().isEmpty() )
-                m_peerIpAddress = qhi.addresses().first();
-        }
-    }
 }
 
 
@@ -107,7 +77,7 @@ ControlConnection::source() const
 Connection*
 ControlConnection::clone()
 {
-    ControlConnection* clone = new ControlConnection( servent(), m_peerIpAddress.toString() );
+    ControlConnection* clone = new ControlConnection( servent() );
     clone->setOnceOnly( onceOnly() );
     clone->setName( name() );
     return clone;
@@ -157,14 +127,6 @@ ControlConnection::registerSource()
     Source* source = (Source*) sender();
     Q_UNUSED( source )
     Q_ASSERT( source == m_source.data() );
-
-#ifndef ENABLE_HEADLESS
-//    qDebug() << Q_FUNC_INFO << "Setting avatar ... " << name() << !SipHandler::instance()->avatar( name() ).isNull();
-    if ( !SipHandler::instance()->avatar( name() ).isNull() )
-    {
-        source->setAvatar( SipHandler::instance()->avatar( name() ) );
-    }
-#endif
 
     m_registered = true;
     m_servent->registerControlConnection( this );
@@ -310,4 +272,16 @@ ControlConnection::onPingTimer()
     }
 
     sendMsg( Msg::factory( QByteArray(), Msg::PING ) );
+}
+
+void
+ControlConnection::addPeerInfo( PeerInfo *peerInfo )
+{
+    m_peerInfos.append( peerInfo );
+}
+
+QList< PeerInfo* >
+ControlConnection::peerInfos()
+{
+    return m_peerInfos;
 }

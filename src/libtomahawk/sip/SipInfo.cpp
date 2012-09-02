@@ -91,7 +91,7 @@ SipInfo::clear()
 bool
 SipInfo::isValid() const
 {
-//    qDebug() << Q_FUNC_INFO << d->visible << d->host.hostName() << d->port << d->uniqname << d->key;
+//    tLog() << Q_FUNC_INFO << d->visible << d->host << d->port << d->uniqname << d->key;
     if( !d->visible.isNull() )
     {
         if(

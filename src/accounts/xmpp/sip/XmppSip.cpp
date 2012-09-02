@@ -432,9 +432,9 @@ XmppSipPlugin::errorMessage( Jreen::Client::DisconnectReason reason )
 
 
 void
-XmppSipPlugin::sendMsg( const QString& to, const SipInfo& info )
+XmppSipPlugin::sendSipInfo( PeerInfo* receiver, const SipInfo& info )
 {
-    qDebug() << Q_FUNC_INFO << to << info;
+    qDebug() << Q_FUNC_INFO << receiver << info;
 
     if ( !m_client )
         return;
@@ -447,18 +447,12 @@ XmppSipPlugin::sendMsg( const QString& to, const SipInfo& info )
     else
         sipMessage = new TomahawkXmppMessage();
 
-    qDebug() << "Send sip messsage to" << to;
-    Jreen::IQ iq( Jreen::IQ::Set, to );
+    qDebug() << "Send sip messsage to" << receiver;
+    Jreen::IQ iq( Jreen::IQ::Set, receiver->id() );
     iq.addExtension( sipMessage );
     Jreen::IQReply *reply = m_client->send( iq );
     reply->setData( SipMessageSent );
     connect( reply, SIGNAL( received( Jreen::IQ ) ), SLOT( onNewIq( Jreen::IQ ) ) );
-}
-
-
-void
-XmppSipPlugin::broadcastMsg( const QString& msg )
-{
 }
 
 
@@ -696,12 +690,10 @@ XmppSipPlugin::onNewMessage( const Jreen::Message& message )
         // this is not a sip message, so we send it directly through the client
         m_client->send( Jreen::Message ( Jreen::Message::Error, Jreen::JID( to ), response) );
 
-        emit msgReceived( from, msg );
         return;
     }
 
     qDebug() << Q_FUNC_INFO << "From:" << message.from().full() << ":" << message.body();
-    emit sipInfoReceived( from, info );
 }
 
 
@@ -870,7 +862,7 @@ XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
         {
             QString versionString = QString( "%1 %2 %3" ).arg( softwareVersion->name(), softwareVersion->os(), softwareVersion->version() );
             qDebug() << Q_FUNC_INFO << "Received software version for" << iq.from().full() << ":" << versionString;
-            emit softwareVersionReceived( iq.from().full(), versionString );
+//             emit softwareVersionReceived( iq.from().full(), versionString );
         }
     }
     else if ( context == RequestedDisco )
@@ -907,8 +899,13 @@ XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
 
             Q_ASSERT( info.isValid() );
 
-            qDebug() << Q_FUNC_INFO << "From:" << iq.from().full() << ":" << info;
-            emit sipInfoReceived( iq.from().full(), info );
+            PeerInfo* peerInfo = peerInfoForId( iq.from().full() );
+            if( !peerInfo ) {
+                tLog() << "no peerinfo for: " << iq.from().full();
+                return;
+            }
+
+            peerInfo->setSipInfo( info );
         }
     }
 }
@@ -943,7 +940,7 @@ XmppSipPlugin::handlePeerStatus( const Jreen::JID& jid, Jreen::Presence::Type pr
         m_peers[ jid ] = presenceType;
         qDebug() << Q_FUNC_INFO << "* Peer goes offline:" << fulljid;
 
-        emit peerOffline( fulljid );
+        emit peerOffline( peerInfoForId( fulljid ) );
         return;
     }
 
@@ -954,7 +951,12 @@ XmppSipPlugin::handlePeerStatus( const Jreen::JID& jid, Jreen::Presence::Type pr
         m_peers[ jid ] = presenceType;
         qDebug() << Q_FUNC_INFO << "* Peer goes online:" << fulljid;
 
-        emit peerOnline( fulljid );
+        if( !peerInfoForId( fulljid ) )
+        {
+            emit peerOnline( new PeerInfo( this, fulljid ) );
+        }
+        else
+            emit peerOnline( peerInfoForId( fulljid ) );
 
 #ifndef ENABLE_HEADLESS
         if ( !m_avatarManager->avatar( jid.bare() ).isNull() )
@@ -992,16 +994,18 @@ XmppSipPlugin::onNewAvatar( const QString& jid )
     {
         if ( peer.bare() == jid )
         {
-            emit avatarReceived( peer.full(), m_avatarManager->avatar( jid ) );
+            PeerInfo* peerInfo = peerInfoForId( peer.full() );
+            if( peerInfo )
+            {
+                peerInfo->setAvatar( m_avatarManager->avatar( jid ) );
+            }
         }
     }
 
+    // own avatar
     if ( jid == m_client->jid().bare() )
-        // own avatar
         emit avatarReceived( m_avatarManager->avatar( jid ) );
-    else
-        // someone else's avatar
-        emit avatarReceived( jid,  m_avatarManager->avatar( jid ) );
+
 #endif
 }
 

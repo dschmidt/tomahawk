@@ -180,7 +180,7 @@ PlaylistItemDelegate::paintShort( QPainter* painter, const QStyleOptionViewItem&
         if ( useAvatars )
         {
             if ( !source.isNull() )
-                pixmap = source->avatar( Source::FancyStyle, ir.size() );
+                pixmap = source->avatar( TomahawkUtils::AvatarStyleFancy, ir.size() );
         }
         else
             pixmap = item->query()->cover( ir.size(), false );

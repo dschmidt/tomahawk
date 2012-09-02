@@ -160,6 +160,7 @@ IF(QCA2_FOUND)
     set( libGuiHeaders ${libGuiHeaders} utils/GroovesharkParser.h )
 ENDIF(QCA2_FOUND)
 
+
 set( libSources
     TomahawkSettings.cpp
     SourceList.cpp
@@ -206,6 +207,7 @@ set( libSources
     sip/SipPlugin.cpp
     sip/SipHandler.cpp
     sip/SipInfo.cpp
+    sip/PeerInfo.cpp
 
     audio/AudioEngine.cpp
 

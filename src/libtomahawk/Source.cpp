@@ -53,12 +53,9 @@ Source::Source( int id, const QString& username )
     , m_username( username )
     , m_id( id )
     , m_updateIndexWhenSynced( false )
-    , m_avatarUpdated( true )
     , m_state( DBSyncConnection::UNKNOWN )
     , m_cc( 0 )
     , m_commandCount( 0 )
-    , m_avatar( 0 )
-    , m_fancyAvatar( 0 )
 {
     m_scrubFriendlyName = qApp->arguments().contains( "--demo" );
 
@@ -79,8 +76,6 @@ Source::Source( int id, const QString& username )
 Source::~Source()
 {
     qDebug() << Q_FUNC_INFO << friendlyName();
-    delete m_avatar;
-    delete m_fancyAvatar;
 }
 
 
@@ -114,79 +109,45 @@ Source::setStats( const QVariantMap& m )
 QString
 Source::friendlyName() const
 {
+    if( controlConnection() )
+    {
+        foreach( PeerInfo* peerInfo, controlConnection()->peerInfos() )
+        {
+            Q_ASSERT( peerInfo );
+
+            if( !peerInfo->friendlyName().isNull() )
+                return peerInfo->friendlyName();
+            else
+                return peerInfo->id();
+        }
+    }
+
     if ( m_friendlyname.isEmpty() )
         return m_username;
 
-    //TODO: this is a terrible assumption, help me clean this up, mighty muesli!
-    if ( m_friendlyname.contains( "@conference." ) )
-        return QString( m_friendlyname ).remove( 0, m_friendlyname.lastIndexOf( "/" ) + 1 ).append( " via MUC" );
-
-    if ( m_friendlyname.contains( "/" ) )
-        return m_friendlyname.left( m_friendlyname.indexOf( "/" ) );
+//    if ( m_friendlyname.contains( "/" ) )
+//        return m_friendlyname.left( m_friendlyname.indexOf( "/" ) );
 
     return m_friendlyname;
 }
 
 
 #ifndef ENABLE_HEADLESS
-void
-Source::setAvatar( const QPixmap& avatar )
-{
-    delete m_avatar;
-    m_avatar = new QPixmap( avatar );
-    m_fancyAvatar = 0;
-
-    QByteArray ba;
-    QBuffer buffer( &ba );
-    buffer.open( QIODevice::WriteOnly );
-    avatar.save( &buffer, "PNG" );
-
-    TomahawkUtils::Cache::instance()->putData( "Sources", 7776000000 /* 90 days */, m_username, ba );
-    m_avatarUpdated = true;
-}
-
-
 QPixmap
-Source::avatar( AvatarStyle style, const QSize& size )
+Source::avatar( TomahawkUtils::AvatarStyle style, const QSize& size )
 {
-    if ( !m_avatar && m_avatarUpdated )
+    if( controlConnection() )
     {
-        m_avatar = new QPixmap();
-        QByteArray ba = TomahawkUtils::Cache::instance()->getData( "Sources", m_username ).toByteArray();
-
-        if ( ba.count() )
-            m_avatar->loadFromData( ba );
-        if ( m_avatar->isNull() )
+        foreach( PeerInfo* peerInfo, controlConnection()->peerInfos() )
         {
-            delete m_avatar;
-            m_avatar = 0;
+            Q_ASSERT( peerInfo );
+
+            if( !peerInfo->avatar( style, size ).isNull() )
+                return peerInfo->avatar( style, size );
         }
-        m_avatarUpdated = false;
     }
 
-    if ( style == FancyStyle && m_avatar && !m_fancyAvatar )
-        m_fancyAvatar = new QPixmap( TomahawkUtils::createAvatarFrame( QPixmap( *m_avatar ) ) );
-
-    QPixmap pixmap;
-    if ( style == Original && m_avatar )
-        pixmap = *m_avatar;
-    else if ( style == FancyStyle && m_fancyAvatar )
-        pixmap = *m_fancyAvatar;
-
-    if ( !pixmap.isNull() && !size.isEmpty() )
-    {
-        if ( m_coverCache.contains( size.width() ) )
-        {
-            return m_coverCache.value( size.width() );
-        }
-
-        QPixmap scaledCover;
-        scaledCover = pixmap.scaled( size, Qt::KeepAspectRatio, Qt::SmoothTransformation );
-        m_coverCache.insert( size.width(), scaledCover );
-        return scaledCover;
-    }
-
-    return pixmap;
+    return QPixmap();
 }
 #endif
 

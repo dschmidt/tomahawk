@@ -151,7 +151,7 @@ PlaylistLargeItemDelegate::paint( QPainter* painter, const QStyleOptionViewItem&
     source_ptr source = item->query()->playedBy().first;
     if ( m_mode == RecentlyPlayed && !source.isNull() )
     {
-        avatar = source->avatar( Source::FancyStyle, avatarSize );
+        avatar = source->avatar( TomahawkUtils::AvatarStyleFancy, avatarSize );
         QString playtime = TomahawkUtils::ageToString( QDateTime::fromTime_t( item->query()->playedBy().second ), true );
 
         if ( source == SourceList::instance()->getLocal() )

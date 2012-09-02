@@ -22,20 +22,20 @@
 #ifndef SIPPLUGIN_H
 #define SIPPLUGIN_H
 
+#include "PeerInfo.h"
 #include "SipInfo.h"
+#include "accounts/Account.h"
+
+#include "DllMacro.h"
 
 #include <QObject>
 #include <QString>
 #include <QNetworkProxy>
 
-#include "accounts/Account.h"
 #ifndef ENABLE_HEADLESS
     #include <QMenu>
 #endif
 
-#include "DllMacro.h"
-
-class SipPlugin;
 
 class DLLEXPORT SipPlugin : public QObject
 {
@@ -59,7 +59,7 @@ public:
     virtual Tomahawk::Accounts::Account* account() const;
 
     // peer infos
-    virtual const QStringList peersOnline() const;
+    virtual const QList< PeerInfo* > peersOnline() const;
 
 public slots:
     virtual void connectPlugin() = 0;
@@ -67,38 +67,35 @@ public slots:
     virtual void checkSettings() = 0;
     virtual void configurationChanged() = 0;
 
-    virtual void addContact( const QString &jid, const QString& msg = QString() ) = 0;
-    virtual void sendMsg( const QString& to, const SipInfo& info ) = 0;
+    virtual void sendSipInfo( PeerInfo* receiver, const SipInfo& info ) = 0;
+    virtual void addContact( const QString& jid, const QString& msg = QString() ){};
 
 signals:
-    void peerOnline( const QString& );
-    void peerOffline( const QString& );
-    void msgReceived( const QString& from, const QString& msg );
-    void sipInfoReceived( const QString& peerId, const SipInfo& info );
-    void softwareVersionReceived( const QString& peerId, const QString& versionString );
+    void peerOnline( PeerInfo* );
+    void peerOffline( PeerInfo* );
+
+    void dataError( bool );
 
 #ifndef ENABLE_HEADLESS
     // new data for own source
     void avatarReceived ( const QPixmap& avatar );
 
-    // new data for other sources;
-    void avatarReceived ( const QString& from,  const QPixmap& avatar);
-
     void addMenu( QMenu* menu );
     void removeMenu( QMenu* menu );
 #endif
 
-    void dataError( bool );
+protected:
+    PeerInfo* peerInfoForId( const QString& id );
 
 private slots:
-    void onPeerOnline( const QString &peerId );
-    void onPeerOffline( const QString &peerId );
+    void onPeerOnline( PeerInfo* peerInfo );
+    void onPeerOffline( PeerInfo* peerInfo );
 
 protected:
     Tomahawk::Accounts::Account *m_account;
 
 private:
-    QStringList m_peersOnline;
+    QList< PeerInfo* > m_peersOnline;
 };
 
 #endif

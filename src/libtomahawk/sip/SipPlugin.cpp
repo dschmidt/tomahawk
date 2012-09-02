@@ -32,8 +32,8 @@ SipPlugin::SipPlugin( Tomahawk::Accounts::Account *account, QObject* parent )
     : QObject( parent )
     , m_account( account )
 {
-    connect( this, SIGNAL( peerOnline( QString ) ), this, SLOT( onPeerOnline( QString ) ) );
-    connect( this, SIGNAL( peerOffline( QString ) ), this, SLOT( onPeerOffline( QString ) ) );
+    connect( this, SIGNAL( peerOnline( PeerInfo* ) ), this, SLOT( onPeerOnline( PeerInfo* ) ) );
+    connect( this, SIGNAL( peerOffline( PeerInfo* ) ), this, SLOT( onPeerOffline( PeerInfo* ) ) );
 }
 
 
@@ -82,7 +82,7 @@ SipPlugin::account() const
 }
 
 
-const QStringList
+const QList< PeerInfo* >
 SipPlugin::peersOnline() const
 {
     return m_peersOnline;
@@ -90,17 +90,38 @@ SipPlugin::peersOnline() const
 
 
 void
-SipPlugin::onPeerOnline( const QString& peerId )
+addContact( const QString& jid, const QString& msg )
 {
-   if( !m_peersOnline.contains( peerId ) )
+}
+
+
+void
+SipPlugin::onPeerOnline( PeerInfo* peerInfo )
+{
+   if( !m_peersOnline.contains( peerInfo ) )
    {
-       m_peersOnline.append( peerId );
+       m_peersOnline.append( peerInfo );
    }
 }
 
 
 void
-SipPlugin::onPeerOffline( const QString& peerId )
+SipPlugin::onPeerOffline( PeerInfo* peerInfo )
 {
-    m_peersOnline.removeAll( peerId );
+    tLog() << "peer offline";
+    m_peersOnline.removeAll( peerInfo );
+    delete peerInfo;
+}
+
+
+PeerInfo* SipPlugin::peerInfoForId( const QString& id )
+{
+   foreach( PeerInfo* peerInfo, m_peersOnline )
+    {
+//         tLog() << "id: " << id << " peerInfo: " << peerInfo->id();
+        if( peerInfo->id() == id )
+            return peerInfo;
+    }
+
+    return 0;
 }
