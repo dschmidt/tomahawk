@@ -92,6 +92,19 @@ PeerInfo::avatar() const
 }
 
 
+void
+PeerInfo::setVersionInfo( const QString& versionInfo )
+{
+    m_versionInfo = versionInfo;
+}
+
+
+const QString
+PeerInfo::versionInfo() const
+{
+    return m_versionInfo;
+}
+
 // QDebug
 // operator<<( QDebug dbg, const PeerInfo& info )
 // {

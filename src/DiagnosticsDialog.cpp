@@ -153,30 +153,30 @@ DiagnosticsDialog::accountLog( Tomahawk::Accounts::Account* account )
         if ( !sipInfo.isValid() )
         {
             accountInfo.append(
-                QString("       %1: %2 "/*%3*/ /*"(%4)"*/ "\n")
+                QString("       %1: %2 (%3) " /*"(%4)"*/ "\n")
                     .arg( peerInfo->id() )
                     .arg( "sipinfo invalid" )
-//                     .arg( versionString )
+                    .arg( peerInfo->versionInfo() )
                     // .arg( connected ? "connected" : "not connected")
             );
         }
         else if ( sipInfo.isVisible() )
         {
             accountInfo.append(
-                QString("       %1: %2:%3 " /*%4*/ /*" (%5)"*/ "\n")
+                QString("       %1: %2:%3 (%4)"/*" (%5)"*/ "\n")
                     .arg( peerInfo->id() )
                     .arg( sipInfo.host() )
                     .arg( sipInfo.port() )
-//                     .arg( versionString )
+                    .arg( peerInfo->versionInfo() )
                     // .arg( connected ? "connected" : "not connected")
             );
         }
         else
         {
             accountInfo.append(
-                QString("       %1: visible: false " /*"%2 (%3)"*/ "\n")
+                QString("       %1: visible: false (%2)" /*" (%3)"*/ "\n")
                     .arg( peerInfo->id() )
-//                     .arg( versionString )
+                    .arg( peerInfo->versionInfo() )
                     // .arg( connected ? "connected" : "not connected")
             );
         }

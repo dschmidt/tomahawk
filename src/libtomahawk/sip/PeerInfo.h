@@ -50,6 +50,9 @@ public:
     void setAvatar( const QPixmap& avatar );
     const QPixmap avatar() const;
 
+    void setVersionInfo( const QString& versionInfo );
+    const QString versionInfo() const;
+
 signals:
     void sipInfoChanged();
 
@@ -59,6 +62,7 @@ private:
     SipInfo m_sipInfo;
     QString m_friendlyName;
     QPixmap m_avatar;
+    QString m_versionInfo;
 };
 
 // DLLEXPORT QDebug operator<<( QDebug dbg, const PeerInfo &info );
