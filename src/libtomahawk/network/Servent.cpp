@@ -397,8 +397,8 @@ Servent::readyRead()
             tLog() << "Socket has become invalid, possibly took too long to make an ACL decision, key:" << key << nodeid;
             goto closeconnection;
         }
-        tDebug( LOGVERBOSE ) << "claimOffer OK:" << key << nodeid;        
-        
+        tDebug( LOGVERBOSE ) << "claimOffer OK:" << key << nodeid;
+
         m_connectedNodes << nodeid;
         if( !nodeid.isEmpty() )
             conn->setId( nodeid );

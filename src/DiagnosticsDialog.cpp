@@ -142,41 +142,40 @@ DiagnosticsDialog::accountLog( Tomahawk::Accounts::Account* account )
         QString( "  %2 (%1): %3 (%4)\n" )
             .arg( account->accountServiceName() )
             .arg( account->sipPlugin()->friendlyName() )
-            .arg( account->accountFriendlyName())
+            .arg( account->accountFriendlyName() )
             .arg( stateString )
     );
 
-    foreach( const QString& peerId, account->sipPlugin()->peersOnline() )
+    foreach( PeerInfo* peerInfo, account->sipPlugin()->peersOnline() )
     {
-        QString versionString = SipHandler::instance()->versionString( peerId );
-        SipInfo sipInfo = SipHandler::instance()->sipInfo( peerId );
+        const SipInfo sipInfo = peerInfo->sipInfo();
         if ( !sipInfo.isValid() )
         {
             accountInfo.append(
-                QString("       %1: %2 %3" /*"(%4)"*/ "\n")
-                    .arg( peerId )
+                QString("       %1: %2 "/*%3*/ /*"(%4)"*/ "\n")
+                    .arg( peerInfo->id() )
                     .arg( "sipinfo invalid" )
-                    .arg( versionString )
+//                     .arg( versionString )
                     // .arg( connected ? "connected" : "not connected")
             );
         }
         else if ( sipInfo.isVisible() )
         {
             accountInfo.append(
-                QString("       %1: %2:%3 %4" /*" (%5)"*/ "\n")
-                    .arg( peerId )
+                QString("       %1: %2:%3 " /*%4*/ /*" (%5)"*/ "\n")
+                    .arg( peerInfo->id() )
                     .arg( sipInfo.host() )
                     .arg( sipInfo.port() )
-                    .arg( versionString )
+//                     .arg( versionString )
                     // .arg( connected ? "connected" : "not connected")
             );
         }
         else
         {
             accountInfo.append(
-                QString("       %1: visible: false %2" /*" (%3)"*/ "\n")
-                    .arg( peerId )
-                    .arg( versionString )
+                QString("       %1: visible: false " /*"%2 (%3)"*/ "\n")
+                    .arg( peerInfo->id() )
+//                     .arg( versionString )
                     // .arg( connected ? "connected" : "not connected")
             );
         }

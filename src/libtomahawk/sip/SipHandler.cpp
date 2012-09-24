@@ -104,13 +104,10 @@ SipHandler::versionString( const QString& peerId ) const
 void
 SipHandler::hookUpPlugin( SipPlugin* sip )
 {
-    QObject::connect( sip, SIGNAL( peerOnline( QString ) ), SLOT( onPeerOnline( QString ) ) );
-    QObject::connect( sip, SIGNAL( peerOffline( QString ) ), SLOT( onPeerOffline( QString ) ) );
-    QObject::connect( sip, SIGNAL( msgReceived( QString, QString ) ), SLOT( onMessage( QString, QString ) ) );
-    QObject::connect( sip, SIGNAL( sipInfoReceived( QString, SipInfo ) ), SLOT( onSipInfo( QString, SipInfo ) ) );
-    QObject::connect( sip, SIGNAL( softwareVersionReceived( QString, QString ) ), SLOT( onSoftwareVersion( QString, QString ) ) );
+    QObject::connect( sip, SIGNAL( peerOnline( PeerInfo* ) ), SLOT( onPeerOnline( PeerInfo* ) ) );
+    QObject::connect( sip, SIGNAL( peerOffline( PeerInfo* ) ), SLOT( onPeerOffline( PeerInfo* ) ) );
 
-    QObject::connect( sip, SIGNAL( avatarReceived( QString, QPixmap ) ), SLOT( onAvatarReceived( QString, QPixmap ) ) );
+
     QObject::connect( sip, SIGNAL( avatarReceived( QPixmap ) ), SLOT( onAvatarReceived( QPixmap ) ) );
 
     QObject::connect( sip->account(), SIGNAL( configurationChanged() ), sip, SLOT( configurationChanged() ) );
@@ -118,12 +115,14 @@ SipHandler::hookUpPlugin( SipPlugin* sip )
 
 
 void
-SipHandler::onPeerOnline( const QString& peerId )
+SipHandler::onPeerOnline( PeerInfo* peerInfo )
 {
+    QString peerId = peerInfo->id();
+
 //    qDebug() << Q_FUNC_INFO;
     tDebug() << "SIP online:" << peerId;
 
-    SipPlugin* sip = qobject_cast<SipPlugin*>(sender());
+    SipPlugin* sip = qobject_cast< SipPlugin* >( sender() );
 
     SipInfo info;
     if( Servent::instance()->visibleExternally() )
@@ -150,109 +149,80 @@ SipHandler::onPeerOnline( const QString& peerId )
         tDebug() << "We are not visible externally:" << info;
     }
 
-    sip->sendMsg( peerId, info );
+    sip->sendSipInfo( peerInfo, info );
+    handleSipInfo( peerInfo );
+    connect(peerInfo, SIGNAL(sipInfoChanged()), SLOT(onSipInfoChanged()));
 }
 
 
 void
-SipHandler::onPeerOffline( const QString& peerId )
+SipHandler::onPeerOffline( PeerInfo* peerInfo )
 {
 //    qDebug() << Q_FUNC_INFO;
-    tDebug() << "SIP offline:" << peerId;
+    tDebug() << "SIP offline:" << peerInfo->id();
 }
 
 
 void
-SipHandler::onSipInfo( const QString& peerId, const SipInfo& info )
+SipHandler::onSipInfoChanged()
 {
-    tDebug() << Q_FUNC_INFO << "SIP Message:" << peerId << info;
+    PeerInfo* peerInfo = qobject_cast< PeerInfo* >( sender() );
 
-    QString barePeerId = peerId.left( peerId.indexOf( "/" ) );
+    if( !peerInfo )
+        return;
+
+    handleSipInfo( peerInfo );
+}
+
+
+void
+SipHandler::handleSipInfo( PeerInfo* peerInfo )
+{
+    tLog() << Q_FUNC_INFO << peerInfo->id() << peerInfo->sipInfo();
+
+    SipInfo info = peerInfo->sipInfo();
+
+    if( !info.isValid() )
+        return;
+
+//     QString barePeerId = peerId.left( peerId.indexOf( "/" ) );
 
     //FIXME: We should probably be using barePeerId in the connectToPeer call below.
     //But, verify this doesn't cause any problems (there is still a uniquename after all)
 
     /*
-      If only one party is externally visible, connection is obvious
-      If both are, peer with lowest IP address initiates the connection.
-      This avoids dupe connections.
-     */
+        If only one party is externally visible, connection is obvious
+        If both are, peer with lowest IP address initiates the connection.
+        This avoids dupe connections.
+        */
     if ( info.isVisible() )
     {
-        if( !Servent::instance()->visibleExternally() ||
+            if( !Servent::instance()->visibleExternally() ||
             Servent::instance()->externalAddress() < info.host() ||
             ( Servent::instance()->externalAddress() == info.host() && Servent::instance()->externalPort() < info.port() ) )
         {
-            tDebug() << "Initiate connection to" << peerId << "at" << info.host();
+                tDebug() << "Initiate connection to" << peerInfo->id() << "at" << info.host();
             Servent::instance()->connectToPeer( info.host(),
-                                          info.port(),
-                                          info.key(),
-                                          peerId,
-                                          info.uniqname() );
+                                            info.port(),
+                                            info.key(),
+                                            peerInfo->id(),
+                                            info.uniqname() );
         }
         else
         {
-            tDebug() << Q_FUNC_INFO << "They should be conecting to us...";
+                tDebug() << Q_FUNC_INFO << "They should be conecting to us...";
         }
     }
     else
     {
-        tDebug() << Q_FUNC_INFO << "They are not visible, doing nothing atm";
+            tDebug() << Q_FUNC_INFO << "They are not visible, doing nothing atm";
     }
 
-    m_peersSipInfos.insert( peerId, info );
+    m_peersSipInfos.insert( peerInfo->id(), info );
 }
 
-void SipHandler::onSoftwareVersion( const QString& peerId, const QString& versionString )
-{
-    m_peersSoftwareVersions.insert( peerId, versionString );
-}
-
-void
-SipHandler::onMessage( const QString& from, const QString& msg )
-{
-    qDebug() << Q_FUNC_INFO << from << msg;
-}
 
 #ifndef ENABLE_HEADLESS
-void
-SipHandler::onAvatarReceived( const QString& from, const QPixmap& avatar )
-{
-//    qDebug() << Q_FUNC_INFO << "setting avatar on source for" << from;
-    if ( avatar.isNull() )
-    {
-//        qDebug() << Q_FUNC_INFO << "got null pixmap, not adding anything";
-        return;
-    }
-
-    m_usernameAvatars.insert( from, avatar );
-
-    //
-
-    //Tomahawk::source_ptr source = ->source();
-    ControlConnection *conn = Servent::instance()->lookupControlConnection( from );
-    if( conn )
-    {
-//        qDebug() << Q_FUNC_INFO << from << "got control connection";
-        Tomahawk::source_ptr source = conn->source();
-        if( source )
-        {
-
-//            qDebug() << Q_FUNC_INFO << from << "got source, setting avatar";
-            source->setAvatar( avatar );
-        }
-        else
-        {
-//            qDebug() << Q_FUNC_INFO << from << "no source found, not setting avatar";
-        }
-    }
-    else
-    {
-//        qDebug() << Q_FUNC_INFO << from << "no control connection setup yet";
-    }
-}
-
-
 void
 SipHandler::onAvatarReceived( const QPixmap& avatar )
 {

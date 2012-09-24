@@ -87,10 +87,10 @@ public slots:
     virtual void disconnectPlugin();
     virtual void checkSettings();
     virtual void configurationChanged();
-    virtual void sendMsg( const QString& peerId, const SipInfo& info );
     virtual void addContact( const QString& peerId, const QString& msg = QString() );
 
-    void broadcastMsg( const QString& msg );
+    virtual void sendSipInfo( PeerInfo* receiver, const SipInfo& info );
+
     void showAddFriendDialog();
     void publishTune( const QUrl& url, const Tomahawk::InfoSystem::InfoStringHash& trackInfo );
 
@@ -112,6 +112,8 @@ private slots:
     void onNewAvatar( const QString& jid );
 
 private:
+    PeerInfo* peerInfo( QString fullJid ) const;
+
     bool readXmlConsoleEnabled();
     QString readUsername();
     QString readPassword();
@@ -151,6 +153,8 @@ private:
     enum IqContext { NoContext, RequestDisco, RequestedDisco, SipMessageSent, RequestedVCard, RequestVersion, RequestedVersion };
     AvatarManager* m_avatarManager;
     Jreen::PubSub::Manager* m_pubSubManager;
+
+    QHash< QString, PeerInfo* > m_fulljidPeerInfos;
 };
 
 #endif

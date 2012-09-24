@@ -58,20 +58,18 @@ public:
     const QString versionString( const QString& peerId ) const;
 
     void hookUpPlugin( SipPlugin* p );
+private:
+    void handleSipInfo( PeerInfo* );
 
 private slots:
-    void onSipInfo( const QString& peerId, const SipInfo& info );
-    void onSoftwareVersion( const QString& peerId, const QString& versionString );
-    void onMessage( const QString&, const QString& );
-    void onPeerOffline( const QString& );
-    void onPeerOnline( const QString& );
+    void onPeerOffline( PeerInfo* );
+    void onPeerOnline( PeerInfo* );
+
+    void onSipInfoChanged();
 
 #ifndef ENABLE_HEADLESS
     // set data for local source
     void onAvatarReceived( const QPixmap& avatar );
-
-    // set data for other sources
-    void onAvatarReceived( const QString& from, const QPixmap& avatar );
 #endif
 
 private:
