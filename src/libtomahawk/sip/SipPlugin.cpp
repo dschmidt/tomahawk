@@ -102,7 +102,6 @@ SipPlugin::onPeerOnline( PeerInfo* peerInfo )
 void
 SipPlugin::onPeerOffline( PeerInfo* peerInfo )
 {
-    Q_ASSERT(false);
     m_peersOnline.removeAll( peerInfo );
 }
 
