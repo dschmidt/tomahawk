@@ -271,16 +271,25 @@ Servent::unregisterControlConnection( ControlConnection* conn )
 ControlConnection*
 Servent::lookupControlConnection( const SipInfo& sipInfo )
 {
+    tLog() << "lookup control connection";
     foreach( ControlConnection* c, m_controlconnections )
     {
-        const SipInfo cSipInfo = c->peerInfos().first()->sipInfo();
-        if(     cSipInfo.host() == sipInfo.host()
-             && cSipInfo.port() == sipInfo.port()
-             && cSipInfo.uniqname() == sipInfo.uniqname() )
-        {
+//        if ( c->peerInfos().isEmpty() ) continue;
+//        PeerInfo* cPeerInfo = c->peerInfos().first();
+//        if ( !cPeerInfo ) continue;
+
+//        const SipInfo cSipInfo = cPeerInfo->sipInfo();
+//        if (    cSipInfo.host() == sipInfo.host()
+//             && cSipInfo.port() == sipInfo.port()
+//             && cSipInfo.uniqname() == sipInfo.uniqname() )
+//        {
+//            return c;
+//        }
+        tLog() << sipInfo.port() << c->peerPort() << sipInfo.host() << c->peerIpAddress().toString();
+        if ( sipInfo.port() == c->peerPort() && sipInfo.host() == c->peerIpAddress().toString() )
             return c;
-        }
     }
+
     return NULL;
 }
 

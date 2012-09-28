@@ -68,7 +68,7 @@ public slots:
     virtual void configurationChanged() = 0;
 
     virtual void sendSipInfo( PeerInfo* receiver, const SipInfo& info ) = 0;
-    virtual void addContact( const QString& jid, const QString& msg = QString() ){};
+    virtual void addContact( const QString& jid, const QString& msg = QString() ){ Q_UNUSED(jid); Q_UNUSED(msg);};
 
 signals:
     void peerOnline( PeerInfo* );
@@ -93,8 +93,6 @@ private slots:
 
 protected:
     Tomahawk::Accounts::Account *m_account;
-
-private:
     QList< PeerInfo* > m_peersOnline;
 };
 

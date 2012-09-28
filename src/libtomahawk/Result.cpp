@@ -338,7 +338,8 @@ Result::sourceIcon( SourceImageStyle style, const QSize& desiredSize ) const
     }
     else
     {
-        QPixmap avatar = collection()->source()->avatar( Source::FancyStyle, desiredSize );
+
+        QPixmap avatar = collection()->source()->avatar( TomahawkUtils::AvatarStyleFancy, desiredSize );
         if ( !avatar )
         {
             avatar = TomahawkUtils::defaultPixmap( TomahawkUtils::DefaultSourceAvatar, TomahawkUtils::AvatarInFrame, desiredSize );

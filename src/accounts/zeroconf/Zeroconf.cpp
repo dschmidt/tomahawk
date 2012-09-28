@@ -23,6 +23,7 @@
 #include "utils/Logger.h"
 #include "ZeroconfAccount.h"
 #include "Source.h"
+#include "network/ControlConnection.h"
 
 #include <QtPlugin>
 #include <QTimer>
@@ -80,10 +81,10 @@ ZeroconfPlugin::connectPlugin()
     advertise();
     m_state = Account::Connected;
 
+
     foreach( const QStringList& nodeSet, m_cachedNodes )
     {
-        if ( !Servent::instance()->connectedToSession( nodeSet[3] ) )
-            Servent::instance()->connectToPeer( nodeSet[0], nodeSet[1].toInt(), "whitelist", nodeSet[2], nodeSet[3] );
+        lanHostFound( nodeSet[0], nodeSet[1].toInt(), nodeSet[2], nodeSet[3]);
     }
     m_cachedNodes.clear();
 
@@ -121,6 +122,7 @@ ZeroconfPlugin::advertise()
 void
 ZeroconfPlugin::lanHostFound( const QString& host, int port, const QString& name, const QString& nodeid )
 {
+    tLog() << "is this actually called?!" << name;
     if ( sender() != m_zeroconf )
         return;
 
@@ -135,9 +137,45 @@ ZeroconfPlugin::lanHostFound( const QString& host, int port, const QString& name
         return;
     }
 
-    if ( !Servent::instance()->connectedToSession( nodeid ) )
-        Servent::instance()->connectToPeer( host, port, "whitelist", name, nodeid );
-    else
-        qDebug() << "Already connected to" << host;
+    PeerInfo* peerInfo = peerInfoForId( host );
+
+    if ( !Servent::instance()->connectedToSession( nodeid ) || !peerInfo )
+    {
+        SipInfo sipInfo;
+        sipInfo.setHost( host );
+        sipInfo.setPort( port );
+        sipInfo.setUniqname( nodeid );
+        sipInfo.setKey( "whitelist" );
+        sipInfo.setVisible( true );
+
+        if( !peerInfo )
+        {
+            peerInfo = new PeerInfo( this, host );
+            m_peersOnline.append( peerInfo );
+        }
+
+        peerInfo->setSipInfo( sipInfo );
+
+        if ( !Servent::instance()->connectedToSession( nodeid ) )
+        {
+            Servent::instance()->connectToPeer( peerInfo );
+        }
+        else
+        {
+            qDebug() << "Already connected to" << host; // so peerInfo was 0 before
+            qDebug() << "They connected to us and we don't have a PeerInfo object, created one...";
+            m_peersOnline.append( peerInfo );
+
+            // attach to control connection
+            ControlConnection* conn =  Servent::instance()->lookupControlConnection( sipInfo );
+
+            // we're connected to this nodeid, so we should find a control connection for this sipinfo, no?
+            Q_ASSERT( conn );
+
+            conn->addPeerInfo( peerInfo );
+        }
+    }
+
+    peerInfo->setFriendlyName( name );
 }
 

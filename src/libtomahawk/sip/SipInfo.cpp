@@ -117,7 +117,7 @@ SipInfo::setVisible( bool visible )
 bool
 SipInfo::isVisible() const
 {
-    Q_ASSERT( isValid() );
+//    Q_ASSERT( isValid() );
 
     return d->visible.toBool();
 }
@@ -133,7 +133,7 @@ SipInfo::setHost( const QString& host )
 const QString
 SipInfo::host() const
 {
-    Q_ASSERT( isValid() );
+//    Q_ASSERT( isValid() );
 
     return d->host;
 }
@@ -149,7 +149,7 @@ SipInfo::setPort( int port )
 int
 SipInfo::port() const
 {
-    Q_ASSERT( isValid() );
+//    Q_ASSERT( isValid() );
 
     return d->port;
 }
@@ -165,7 +165,7 @@ SipInfo::setUniqname( const QString& uniqname )
 const QString
 SipInfo::uniqname() const
 {
-    Q_ASSERT( isValid() );
+//    Q_ASSERT( isValid() );
 
     return d->uniqname;
 }
@@ -181,7 +181,7 @@ SipInfo::setKey( const QString& key )
 const QString
 SipInfo::key() const
 {
-    Q_ASSERT( isValid() );
+//    Q_ASSERT( isValid() );
 
     return d->key;
 }
@@ -239,9 +239,9 @@ SipInfo::fromJson( QString json )
 
 QDebug operator<< ( QDebug dbg, const SipInfo& info )
 {
-    if( !info.isValid() )
-        dbg.nospace() << "info is invalid";
-    else
+//    if( !info.isValid() )
+//        dbg.nospace() << "info is invalid. host: " << d->host << " port: " << d->port << " uniqname: " << d->uniqname << " key: " << d->key;
+//    else
         dbg.nospace() << info.toJson();
 
     return dbg.maybeSpace();
