@@ -29,42 +29,43 @@
 ** <http://libqxt.org>  <foundation@libqxt.org>
 *****************************************************************************/
 
-#ifndef QXTABSTRACTWEBSESSIONMANAGER_H
-#define QXTABSTRACTWEBSESSIONMANAGER_H
+#ifndef QXTSSLSERVER_H
+#define QXTSSLSERVER_H
 
-#include <QObject>
-#include <qxtglobal.h>
-class QxtAbstractWebService;
-class QxtWebEvent;
+#include "qxtglobal.h"
+#include <QTcpServer>
 
-class QxtAbstractWebSessionManagerPrivate;
-class QXT_WEB_EXPORT QxtAbstractWebSessionManager : public QObject
+#ifndef QT_NO_OPENSSL
+#include <QSslSocket>
+
+class QxtSslServerPrivate;
+class QXT_NETWORK_EXPORT QxtSslServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    typedef QxtAbstractWebService* ServiceFactory(QxtAbstractWebSessionManager*, int);
+    QxtSslServer(QObject* parent = 0);
 
-    QxtAbstractWebSessionManager(QObject* parent = 0);
+    virtual bool hasPendingConnections() const;
+    virtual QTcpSocket* nextPendingConnection();
 
-    virtual bool start() = 0;
-    virtual void postEvent(QxtWebEvent* event) = 0;
-    void setServiceFactory(ServiceFactory* factory);
-    ServiceFactory* serviceFactory() const;
+    void setLocalCertificate(const QSslCertificate& cert);
+    void setLocalCertificate(const QString& path, QSsl::EncodingFormat format = QSsl::Pem);
+    QSslCertificate localCertificate() const;
 
-    QxtAbstractWebService* session(int sessionID) const;
+    void setPrivateKey(const QSslKey& key);
+    void setPrivateKey(const QString& path, QSsl::KeyAlgorithm algo = QSsl::Rsa,
+            QSsl::EncodingFormat format = QSsl::Pem, const QByteArray& passPhrase = QByteArray());
+    QSslKey privateKey() const;
 
-public Q_SLOTS:
-    virtual bool shutdown() = 0;
+    void setAutoEncrypt(bool on);
+    bool autoEncrypt() const;
 
 protected:
-    int createService();
-    virtual void sessionDestroyed(int sessionID);
-
-protected Q_SLOTS:
-    virtual void processEvents() = 0;
+    virtual void incomingConnection(int socketDescriptor);
 
 private:
-    QXT_DECLARE_PRIVATE(QxtAbstractWebSessionManager)
+    QXT_DECLARE_PRIVATE(QxtSslServer)
 };
 
-#endif // QXTABSTRACTWEBSESSIONMANAGER_H
+#endif /* QT_NO_OPENSSL */
+#endif
