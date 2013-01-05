@@ -86,6 +86,4 @@ ENDIF()
 # 	    ${QT_LIBRARIES}
 # )
 
-qt5_use_modules(qxtweb-standalone Network)
-
 set_target_properties(qxtweb-standalone PROPERTIES AUTOMOC TRUE)
