@@ -7,9 +7,9 @@ IF( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
   CMAKE_POLICY(SET CMP0017 NEW)
 ENDIF( ${CMAKE_VERSION} VERSION_GREATER 2.8.3 )
 
-FIND_PACKAGE( Qt4 4.6.0 COMPONENTS QtCore QtNetwork REQUIRED )
-set(QT_USE_QTNETWORK TRUE)
-include( ${QT_USE_FILE} )
+# FIND_PACKAGE( Qt4 4.6.0 COMPONENTS QtCore QtNetwork REQUIRED )
+# set(QT_USE_QTNETWORK TRUE)
+# include( ${QT_USE_FILE} )
 
 SET(qxtweb "qxtweb")
 
@@ -61,7 +61,6 @@ SET( sources
         ${qxtweb}/qxtboundfunction.h
 )
 
-
 # DLL on windows due to linker issues, otherwise static
 IF(WIN32)
 	ADD_LIBRARY(qxtweb-standalone SHARED
@@ -83,8 +82,10 @@ ELSE()
 ENDIF()
 
 
-target_link_libraries( qxtweb-standalone
-	    ${QT_LIBRARIES}
-)
+# target_link_libraries( qxtweb-standalone
+# 	    ${QT_LIBRARIES}
+# )
+
+qt5_use_modules(qxtweb-standalone Network)
 
 set_target_properties(qxtweb-standalone PROPERTIES AUTOMOC TRUE)

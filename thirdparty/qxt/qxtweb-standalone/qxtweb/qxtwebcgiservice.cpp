@@ -116,7 +116,7 @@ int QxtWebCgiService::timeout() const
  * due to excessive run time. This is the default behavior.
  *
  * CAUTION: Keep in mind that the timeout applies to the real running time of the
- * script, not processor time used. A script that initiates a lengthy download 
+ * script, not processor time used. A script that initiates a lengthy download
  * may be interrupted while transferring data to the web browser. To avoid this
  * behavior, see the timeoutOverride property to allow the script to request
  * an extended timeout, or use a different QxtAbstractWebService object for
@@ -215,7 +215,7 @@ void QxtWebCgiService::pageRequestedEvent(QxtWebRequestEvent* event)
         env["CONTENT_TYPE"] = event->contentType;
         env["CONTENT_LENGTH"] = QString::number(event->content->unreadBytes());
     }
-    env["QUERY_STRING"] = event->url.encodedQuery();
+    env["QUERY_STRING"] = event->url.query();
 
     // Populate HTTP header environment variables
     QMultiHash<QString, QString>::const_iterator iter = event->headers.constBegin();
@@ -251,10 +251,10 @@ void QxtWebCgiService::pageRequestedEvent(QxtWebRequestEvent* event)
     process->setEnvironment(p_env);
 
     // Launch process
-    if (event->url.hasQuery() && event->url.encodedQuery().contains('='))
+    if (event->url.hasQuery() && event->url.query().contains('='))
     {
         // CGI/1.1 spec says to pass the query on the command line if there's no embedded = sign
-        process->start(qxt_d().binary + ' ' + QUrl::fromPercentEncoding(event->url.encodedQuery()), QIODevice::ReadWrite);
+        process->start(qxt_d().binary + ' ' + event->url.query(), QIODevice::ReadWrite);
     }
     else
     {
@@ -336,7 +336,7 @@ void QxtWebCgiServicePrivate::processReadyRead()
             // TODO: QxtWeb doesn't support transmitting arbitrary HTTP headers right now, but it may be desirable
             // for applications that know what kind of server frontend they're using to allow scripts to send
             // protocol-specific headers.
-            
+
             // Post the event
             qxt_p().postEvent(event);
             request.eventSent = true;

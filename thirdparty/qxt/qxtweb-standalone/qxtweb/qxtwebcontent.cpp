@@ -51,6 +51,7 @@ QxtWeb uses QxtWebContent as an abstraction for streaming data.
 #include <QUrl>
 #include <QCoreApplication>
 #include <QThread>
+#include <QUrlQuery>
 
 #ifndef QXT_DOXYGEN_RUN
 class QxtWebContentPrivate : public QxtPrivate<QxtWebContent>
@@ -270,7 +271,7 @@ QHash<QString, QString> QxtWebContent::parseUrlEncodedQuery(const QString& data)
 {
     QUrl post("/?" + data);
     QHash<QString, QString> rv;
-    foreach(const QxtQueryItem& item, post.queryItems())
+    foreach(const QxtQueryItem& item, QUrlQuery( post ).queryItems())
     {
         rv.insertMulti(item.first, item.second);
     }
