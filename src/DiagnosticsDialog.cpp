@@ -169,7 +169,7 @@ DiagnosticsDialog::accountLog( Tomahawk::Accounts::Account* account )
         if ( !sipInfo.isValid() )
         {
             accountInfo.append(
-                QString("       %1: %2 %3" /*"(%4)"*/ "\n")
+                QString("       %1: %2 %3" /*"(%4)"*/)
                     .arg( peerInfo->id() )
                     .arg( "sipinfo invalid" )
                     .arg( versionString )
@@ -179,7 +179,7 @@ DiagnosticsDialog::accountLog( Tomahawk::Accounts::Account* account )
         else if ( sipInfo.isVisible() )
         {
             accountInfo.append(
-                QString("       %1: %2:%3 %4" /*" (%5)"*/ "\n")
+                QString("       %1: %2:%3 %4" /*" (%5)"*/)
                     .arg( peerId )
                     .arg( sipInfo.host() )
                     .arg( sipInfo.port() )
@@ -190,12 +190,27 @@ DiagnosticsDialog::accountLog( Tomahawk::Accounts::Account* account )
         else
         {
             accountInfo.append(
-                QString("       %1: visible: false %2" /*" (%3)"*/ "\n")
+                QString("       %1: visible: false %2" /*" (%3)"*/)
                     .arg( peerId )
                     .arg( versionString )
                     // .arg( connected ? "connected" : "not connected")
             );
         }
+
+        if( sipInfo.isValid() )
+        {
+            if( !Servent::instance()->visibleExternally() ||
+                Servent::instance()->externalAddress() < sipInfo.host() ||
+            ( Servent::instance()->externalAddress() == sipInfo.host() && Servent::instance()->externalPort() < sipInfo.port() ) )
+            {
+                accountInfo.append(" (outbound)");
+            }
+            else
+            {
+                accountInfo.append(" (inbound)");
+            }
+        }
+        accountInfo.append("\n");
     }
     accountInfo.append( "\n" );
 

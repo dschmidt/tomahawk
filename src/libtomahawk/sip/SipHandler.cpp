@@ -166,7 +166,8 @@ void SipHandler::handleSipInfo(const Tomahawk::peerinfo_ptr& peerInfo )
 void
 SipHandler::onAvatarReceived( const QPixmap& avatar )
 {
+//FIXME: this needs to be handled with a local PeerInfo
 //    qDebug() << Q_FUNC_INFO << "Set own avatar on MyCollection";
-    SourceList::instance()->getLocal()->setAvatar( avatar );
+//     SourceList::instance()->getLocal()->setAvatar( avatar );
 }
 #endif

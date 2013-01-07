@@ -126,7 +126,7 @@ Servent::startListening( QHostAddress ha, bool upnp, int port )
     }
 
     TomahawkSettings::ExternalAddressMode mode = TomahawkSettings::instance()->externalAddressMode();
-    
+
     tLog() << "Servent listening on port" << m_port << "- servent thread:" << thread()
            << "- address mode:" << (int)( mode );
 
@@ -403,8 +403,8 @@ Servent::readyRead()
             tLog() << "Socket has become invalid, possibly took too long to make an ACL decision, key:" << key << nodeid;
             goto closeconnection;
         }
-        tDebug( LOGVERBOSE ) << "claimOffer OK:" << key << nodeid;        
-        
+        tDebug( LOGVERBOSE ) << "claimOffer OK:" << key << nodeid;
+
         m_connectedNodes << nodeid;
         if( !nodeid.isEmpty() )
             conn->setId( nodeid );
@@ -472,7 +472,7 @@ Servent::socketConnected()
         tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "Socket's connection was null, could have timed out or been given an invalid address";
         return;
     }
-    
+
     Connection* conn = sock->_conn.data();
     handoverSocket( conn, sock );
 }
@@ -796,7 +796,7 @@ Servent::isIPWhitelisted( QHostAddress ip )
     tDebug( LOGVERBOSE ) << Q_FUNC_INFO << "Performing checks against ip" << ip.toString();
     typedef QPair< QHostAddress, int > range;
     QList< range > subnetEntries;
-    
+
     QList< QNetworkInterface > networkInterfaces = QNetworkInterface::allInterfaces();
     foreach( QNetworkInterface interface, networkInterfaces )
     {
