@@ -64,7 +64,7 @@ public slots:
 
     void advertise();
 
-    void sendMsg( const QString&, const SipInfo&  ) {}
+    void sendSipInfo( const Tomahawk::peerinfo_ptr&, const SipInfo& ) {}
     void broadcastMsg( const QString & ) {}
     void addContact( const QString &, const QString&  ) {}
 

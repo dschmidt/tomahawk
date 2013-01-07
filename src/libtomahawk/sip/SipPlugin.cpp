@@ -32,8 +32,7 @@ SipPlugin::SipPlugin( Tomahawk::Accounts::Account *account, QObject* parent )
     : QObject( parent )
     , m_account( account )
 {
-    connect( this, SIGNAL( peerOnline( QString ) ), this, SLOT( onPeerOnline( QString ) ) );
-    connect( this, SIGNAL( peerOffline( QString ) ), this, SLOT( onPeerOffline( QString ) ) );
+    connect( this, SIGNAL( peerOnline( Tomahawk::peerinfo_ptr ) ), this, SLOT( onPeerOnline( Tomahawk::peerinfo_ptr ) ) );
 }
 
 
@@ -82,7 +81,7 @@ SipPlugin::account() const
 }
 
 
-const QStringList
+const QList< Tomahawk::peerinfo_ptr >
 SipPlugin::peersOnline() const
 {
     return m_peersOnline;
@@ -90,17 +89,10 @@ SipPlugin::peersOnline() const
 
 
 void
-SipPlugin::onPeerOnline( const QString& peerId )
+SipPlugin::onPeerOnline( const Tomahawk::peerinfo_ptr& peerInfo )
 {
-   if( !m_peersOnline.contains( peerId ) )
+   if( !m_peersOnline.contains( peerInfo ) )
    {
-       m_peersOnline.append( peerId );
+       m_peersOnline.append( peerInfo );
    }
-}
-
-
-void
-SipPlugin::onPeerOffline( const QString& peerId )
-{
-    m_peersOnline.removeAll( peerId );
 }

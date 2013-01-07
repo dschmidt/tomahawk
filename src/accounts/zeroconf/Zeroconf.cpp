@@ -23,6 +23,8 @@
 #include "utils/Logger.h"
 #include "ZeroconfAccount.h"
 #include "Source.h"
+#include "sip/PeerInfo.h"
+#include "network/ControlConnection.h"
 
 #include <QtPlugin>
 #include <QTimer>
@@ -82,8 +84,7 @@ ZeroconfPlugin::connectPlugin()
 
     foreach( const QStringList& nodeSet, m_cachedNodes )
     {
-        if ( !Servent::instance()->connectedToSession( nodeSet[3] ) )
-            Servent::instance()->connectToPeer( nodeSet[0], nodeSet[1].toInt(), "whitelist", nodeSet[2], nodeSet[3] );
+        lanHostFound( nodeSet[0], nodeSet[1].toInt(), nodeSet[2], nodeSet[3]);
     }
     m_cachedNodes.clear();
 
@@ -135,9 +136,44 @@ ZeroconfPlugin::lanHostFound( const QString& host, int port, const QString& name
         return;
     }
 
-    if ( !Servent::instance()->connectedToSession( nodeid ) )
-        Servent::instance()->connectToPeer( host, port, "whitelist", name, nodeid );
-    else
-        qDebug() << "Already connected to" << host;
+    peerinfo_ptr peerInfo = Tomahawk::PeerInfo::get( this, host );
+    if ( !Servent::instance()->connectedToSession( nodeid ) || peerInfo.isNull() )
+    {
+        SipInfo sipInfo;
+        sipInfo.setHost( host );
+        sipInfo.setPort( port );
+        sipInfo.setUniqname( nodeid );
+        sipInfo.setKey( "whitelist" );
+        sipInfo.setVisible( true );
+
+        if( peerInfo.isNull() )
+        {
+            peerInfo = Tomahawk::PeerInfo::get( this, host, Tomahawk::PeerInfo::AutoCreate );
+            m_peersOnline.append( peerInfo );
+        }
+
+        peerInfo->setSipInfo( sipInfo );
+
+        if ( !Servent::instance()->connectedToSession( nodeid ) )
+        {
+            Servent::instance()->connectToPeer( peerInfo );
+        }
+        else
+        {
+            qDebug() << "Already connected to" << host; // so peerInfo was 0 before
+            qDebug() << "They connected to us and we don't have a PeerInfo object, created one...";
+            m_peersOnline.append( peerInfo );
+
+            // attach to control connection
+            ControlConnection* conn = Servent::instance()->lookupControlConnection( sipInfo );
+
+            // we're connected to this nodeid, so we should find a control connection for this sipinfo, no?
+            Q_ASSERT( conn );
+
+            conn->addPeerInfo( peerInfo );
+        }
+    }
+
+    peerInfo->setFriendlyName( name );
 }
 

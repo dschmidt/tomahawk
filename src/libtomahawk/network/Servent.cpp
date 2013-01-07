@@ -19,6 +19,23 @@
 
 #include "Servent.h"
 
+#include "Result.h"
+#include "Source.h"
+#include "BufferIoDevice.h"
+#include "Connection.h"
+#include "ControlConnection.h"
+#include "database/Database.h"
+#include "database/DatabaseImpl.h"
+#include "StreamConnection.h"
+#include "SourceList.h"
+#include "sip/SipInfo.h"
+#include "sip/PeerInfo.h"
+#include "PortFwdThread.h"
+#include "TomahawkSettings.h"
+#include "utils/TomahawkUtils.h"
+#include "utils/Logger.h"
+
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMutexLocker>
 #include <QtNetwork/QNetworkInterface>
@@ -29,21 +46,6 @@
 #include <QtNetwork/QNetworkReply>
 
 #include <boost/bind.hpp>
-
-#include "Result.h"
-#include "Source.h"
-#include "BufferIoDevice.h"
-#include "Connection.h"
-#include "ControlConnection.h"
-#include "database/Database.h"
-#include "database/DatabaseImpl.h"
-#include "StreamConnection.h"
-#include "SourceList.h"
-
-#include "PortFwdThread.h"
-#include "TomahawkSettings.h"
-#include "utils/TomahawkUtils.h"
-#include "utils/Logger.h"
 
 using namespace Tomahawk;
 
@@ -168,7 +170,7 @@ Servent::createConnectionKey( const QString& name, const QString &nodeid, const 
     Q_ASSERT( this->thread() == QThread::currentThread() );
 
     QString _key = ( key.isEmpty() ? uuid() : key );
-    ControlConnection* cc = new ControlConnection( this, name );
+    ControlConnection* cc = new ControlConnection( this );
     cc->setName( name.isEmpty() ? QString( "KEY(%1)" ).arg( key ) : name );
     if ( !nodeid.isEmpty() )
         cc->setId( nodeid );
@@ -268,11 +270,14 @@ Servent::unregisterControlConnection( ControlConnection* conn )
 
 
 ControlConnection*
-Servent::lookupControlConnection( const QString& name )
+Servent::lookupControlConnection( const SipInfo& sipInfo )
 {
     foreach( ControlConnection* c, m_controlconnections )
-        if( c->name() == name )
-            return c;
+    {
+        tLog() << sipInfo.port() << c->peerPort() << sipInfo.host() << c->peerIpAddress().toString();
+        if ( sipInfo.port() == c->peerPort() && sipInfo.host() == c->peerIpAddress().toString() )
+             return c;
+    }
 
     return NULL;
 }
@@ -526,26 +531,40 @@ Servent::socketError( QAbstractSocket::SocketError e )
 
 
 void
-Servent::connectToPeer( const QString& ha, int port, const QString &key, const QString& name, const QString& id )
+Servent::connectToPeer( const peerinfo_ptr& peerInfo )
 {
     Q_ASSERT( this->thread() == QThread::currentThread() );
 
-    ControlConnection* conn = new ControlConnection( this, ha );
+    SipInfo sipInfo = peerInfo->sipInfo();
+
+    // try to find a ControlConnection with the same SipInfo, then we dont need to try to connect again
+    ControlConnection* conn = lookupControlConnection( sipInfo );
+    if( conn )
+    {
+        conn->addPeerInfo( peerInfo );
+        return;
+    }
+
     QVariantMap m;
     m["conntype"]  = "accept-offer";
-    m["key"]       = key;
+    m["key"]       = sipInfo.key();
     m["port"]      = externalPort();
     m["nodeid"]    = Database::instance()->impl()->dbid();
 
+
+    conn = new ControlConnection( this );
+    conn->addPeerInfo( peerInfo );
     conn->setFirstMessage( m );
-    if( name.length() )
-        conn->setName( name );
-    if( id.length() )
-        conn->setId( id );
 
-    conn->setProperty( "nodeid", id );
+    if( peerInfo->id().length() )
+        conn->setName( peerInfo->id() );
 
-    connectToPeer( ha, port, key, conn );
+    if( sipInfo.uniqname().length() )
+        conn->setId( sipInfo.uniqname() );
+
+    conn->setProperty( "nodeid", sipInfo.uniqname() );
+
+    connectToPeer( sipInfo.host(), sipInfo.port(), sipInfo.key(), conn );
 }
 
 
@@ -654,7 +673,7 @@ Servent::claimOffer( ControlConnection* cc, const QString &nodeid, const QString
         if( isIPWhitelisted( peer ) )
         {
             tDebug() << "Connection is from whitelisted IP range (LAN)";
-            Connection* conn = new ControlConnection( this, peer.toString() );
+            Connection* conn = new ControlConnection( this );
             conn->setName( peer.toString() );
             return conn;
         }
@@ -698,7 +717,7 @@ Servent::claimOffer( ControlConnection* cc, const QString &nodeid, const QString
     else if ( noauth )
     {
         Connection* conn;
-        conn = new ControlConnection( this, peer );
+        conn = new ControlConnection( this );
         conn->setName( key );
         return conn;
     }
