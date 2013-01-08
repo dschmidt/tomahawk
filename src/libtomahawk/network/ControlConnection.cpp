@@ -27,6 +27,7 @@
 #include "network/DbSyncConnection.h"
 #include "network/Servent.h"
 #include "sip/SipHandler.h"
+#include "sip/PeerInfo.h"
 #include "utils/Logger.h"
 
 #define TCP_TIMEOUT 600

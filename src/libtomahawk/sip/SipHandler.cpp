@@ -92,6 +92,7 @@ SipHandler::onPeerOnline( const Tomahawk::peerinfo_ptr& peerInfo )
         const QString& nodeid = Database::instance()->impl()->dbid();
         conn->setName( peerId.left( peerId.indexOf( "/" ) ) );
         conn->setId( nodeid );
+        conn->addPeerInfo( peerInfo );
 
         Servent::instance()->registerOffer( key, conn );
         info.setVisible( true );
@@ -100,7 +101,7 @@ SipHandler::onPeerOnline( const Tomahawk::peerinfo_ptr& peerInfo )
         info.setKey( key );
         info.setUniqname( nodeid );
 
-        tDebug() << "Asking them to connect to us:" << info;
+        tDebug() << "Asking them ( " << peerInfo->id() << " ) to connect to us:" << info;
     }
     else
     {

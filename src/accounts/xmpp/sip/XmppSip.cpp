@@ -915,6 +915,7 @@ XmppSipPlugin::onNewIq( const Jreen::IQ& iq )
                 return;
             }
             peerInfo->setSipInfo( info );
+            emit peerOnline( peerInfo );
         }
     }
 }

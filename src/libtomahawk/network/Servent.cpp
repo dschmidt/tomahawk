@@ -430,6 +430,7 @@ closeconnection:
 void
 Servent::createParallelConnection( Connection* orig_conn, Connection* new_conn, const QString& key )
 {
+    tLog() << "************** createParallelConnection";
     tDebug( LOGVERBOSE ) << Q_FUNC_INFO << ", key:" << key << thread() << orig_conn;
     // if we can connect to them directly:
     if( orig_conn && orig_conn->outbound() )
@@ -533,6 +534,7 @@ Servent::socketError( QAbstractSocket::SocketError e )
 void
 Servent::connectToPeer( const peerinfo_ptr& peerInfo )
 {
+    tLog() << "************** connectToPeer: outer";
     Q_ASSERT( this->thread() == QThread::currentThread() );
 
     SipInfo sipInfo = peerInfo->sipInfo();
@@ -571,6 +573,7 @@ Servent::connectToPeer( const peerinfo_ptr& peerInfo )
 void
 Servent::connectToPeer( const QString& ha, int port, const QString &key, Connection* conn )
 {
+    tLog() << "************** connectToPeer: inner";
     tDebug( LOGVERBOSE ) << "Servent::connectToPeer:" << ha << ":" << port
                          << thread() << QThread::currentThread();
 
