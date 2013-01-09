@@ -76,7 +76,7 @@ JreenMessageHandler( QtMsgType type, const char *msg )
     switch ( type )
     {
         case QtDebugMsg:
-            tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ":" << "Debug:" << msg;
+//             tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ":" << "Debug:" << msg;
             break;
         case QtWarningMsg:
             tDebug( LOGTHIRDPARTY ).nospace() << JREEN_LOG_INFIX << ":" << "Warning:" << msg;
@@ -943,6 +943,9 @@ XmppSipPlugin::handlePeerStatus( const Jreen::JID& jid, Jreen::Presence::Type pr
 {
     QString fulljid = jid.full();
 
+    if(fulljid.contains("public.talk.google.com"))
+        return;
+    
     // "going offline" event
     if ( !presenceMeansOnline( presenceType ) &&
        ( !m_peers.contains( jid ) || presenceMeansOnline( m_peers.value( jid ) ) ) )

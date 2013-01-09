@@ -31,6 +31,9 @@
 #include <QPixmap>
 
 
+#define peerInfoDebug(peerInfo) tLog() << "PEERINFO:" << ( !peerInfo.isNull() ? peerInfo->debugName() : "Invalid PeerInfo" ).toLatin1().constData()
+
+
 class SipPlugin;
 
 
@@ -62,6 +65,7 @@ public:
 
     const QString id() const;
     SipPlugin* sipPlugin() const;
+    const QString debugName() const;
 
     void setStatus( Status status );
     Status status() const;

@@ -127,16 +127,19 @@ Source::friendlyName() const
 QPixmap
 Source::avatar( TomahawkUtils::ImageMode style, const QSize& size )
 {
-    tLog() << "*****************************************" << Q_FUNC_INFO << friendlyName() << "peers: " << (controlConnection() ? controlConnection()->peerInfos().count() : -1 );
+    tLog() << "*****************************************" << friendlyName() << "peers: " << (controlConnection() ? controlConnection()->peerInfos().count() : -1 );
     if( controlConnection() )
     {
+        QPixmap result;
         foreach( const peerinfo_ptr& peerInfo, controlConnection()->peerInfos() )
         {
+            tLog() << peerInfo->debugName();
             if( !peerInfo.isNull() && !peerInfo->avatar( style, size ).isNull() )
             {
-                return peerInfo->avatar( style, size );
+                result = peerInfo->avatar( style, size );
             }
         }
+        return result;
     }
 
     return QPixmap();

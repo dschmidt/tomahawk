@@ -76,6 +76,9 @@ SipHandler::hookUpPlugin( SipPlugin* sip )
 void
 SipHandler::onPeerOnline( const Tomahawk::peerinfo_ptr& peerInfo )
 {
+    peerInfoDebug(peerInfo) << "onPeerOnline";
+    
+    
     QString peerId = peerInfo->id();
     tDebug() << "SIP online:" << peerId;
 
@@ -109,6 +112,7 @@ SipHandler::onPeerOnline( const Tomahawk::peerinfo_ptr& peerInfo )
         tDebug() << "We are not visible externally:" << info;
     }
 
+    peerInfoDebug(peerInfo) << "sending our sipInfo: " << info;
     sip->sendSipInfo( peerInfo, info );
 
     handleSipInfo( peerInfo );
@@ -130,12 +134,17 @@ SipHandler::onSipInfoChanged()
 
 void SipHandler::handleSipInfo(const Tomahawk::peerinfo_ptr& peerInfo )
 {
+   
     tLog() << Q_FUNC_INFO << peerInfo->id() << peerInfo->sipInfo();
 
     SipInfo info = peerInfo->sipInfo();
     if( !info.isValid() )
         return;
 
+//     peerInfoDebug(peerInfo);
+//     peerInfoDebug(peerInfo);
+//     peerInfoDebug(peerInfo) << "handleSipInfo"; //: peerInfo->sipInfo().isValid(): " << peerInfo->sipInfo().isValid();
+    
     /*
         If only one party is externally visible, connection is obvious
         If both are, peer with lowest IP address initiates the connection.
@@ -148,7 +157,13 @@ void SipHandler::handleSipInfo(const Tomahawk::peerinfo_ptr& peerInfo )
              Servent::instance()->externalAddress() < info.host() ||
            ( Servent::instance()->externalAddress() == info.host() && Servent::instance()->externalPort() < info.port() ) )
         {
-            tDebug() << "Initiate connection to" << peerInfo->id() << "at" << info.host();
+            tLog() << "***********************************************************************************************************";
+            tLog() << "***********************************************************************************************************";
+            tDebug() << "Initiate connection to" << peerInfo->id() << "at" << info.host() << " peer of: " << peerInfo->sipPlugin()->account()->accountFriendlyName();
+            tLog() << "***********************************************************************************************************";
+            tLog() << "***********************************************************************************************************";
+            tLog() << "***********************************************************************************************************";
+//             peerInfoDebug(peerInfo) << "handleSipInfo: start out connection";
             Servent::instance()->connectToPeer( peerInfo );
         }
         else

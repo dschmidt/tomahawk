@@ -534,18 +534,65 @@ Servent::socketError( QAbstractSocket::SocketError e )
 void
 Servent::connectToPeer( const peerinfo_ptr& peerInfo )
 {
-    tLog() << "************** connectToPeer: outer";
+//     tLog() << "************** connectToPeer: outer";
     Q_ASSERT( this->thread() == QThread::currentThread() );
 
     SipInfo sipInfo = peerInfo->sipInfo();
 
+    peerInfoDebug(peerInfo) << "connectToPeer: search for already established connections to the same nodeid: " << m_controlconnections.count() << "connections";
+    
+    bool isDupe = false;
+    ControlConnection* conn = 0;
     // try to find a ControlConnection with the same SipInfo, then we dont need to try to connect again
-    ControlConnection* conn = lookupControlConnection( sipInfo );
-    if( conn )
+    foreach( ControlConnection* c, m_controlconnections )
     {
-        conn->addPeerInfo( peerInfo );
-        return;
+        if( c->id() == sipInfo.uniqname() )
+        {
+            conn = c;
+            tLog() << "MAAAATCH, " << peerInfo->debugName() << "is already connected through the following peers:";
+
+//             bool alreadyAttached = false;
+            foreach(const peerinfo_ptr& moo, c->peerInfos())
+            {
+                tLog() << "peerInfo:" << moo->debugName() << "same object: " << (peerInfo == moo) << (peerInfo.data() == moo.data()) << (peerInfo->debugName() == moo->debugName());
+                
+                if(peerInfo == moo)
+                {
+                    isDupe = true;
+                    tLog() << "Not adding " << peerInfo->debugName() << ", because it's a dupe: peerInfoCount remains " << conn->peerInfos().count();
+                }
+                else
+                {
+                    c->addPeerInfo( peerInfo );
+                    peerInfoDebug(peerInfo) << "Adding " << peerInfo->debugName() << ", not a dupe... new peerInfoCount:" << c->peerInfos().count();
+                    foreach(const peerinfo_ptr& kuh, c->peerInfos())
+                    {
+                        peerInfoDebug(peerInfo) << " ** " << kuh->debugName();
+                    }
+                    break;
+                }
+            }
+            
+            tLog() << "";
+
+            break;
+        }
     }
+    
+    peerInfoDebug(peerInfo) << "connectToPeer: found a match: " << ( conn ? conn->name() : "false" ) << "dupe: " << isDupe;
+
+    if(conn)
+        tLog() << "YAY FOUND MATCH";
+    else
+        tLog() << "WHY YOU NO FIND MATCH?";
+    
+    if(isDupe)
+    {
+        peerInfoDebug(peerInfo) << "it's a dupe, nothing to do here, returning and stopping processing: peerInfoCount:" << conn->peerInfos().count();
+    }
+    
+    if(conn)
+        return;
 
     QVariantMap m;
     m["conntype"]  = "accept-offer";
@@ -553,7 +600,7 @@ Servent::connectToPeer( const peerinfo_ptr& peerInfo )
     m["port"]      = externalPort();
     m["nodeid"]    = Database::instance()->impl()->dbid();
 
-
+    peerInfoDebug(peerInfo) << "No match found, creating a new ControlConnection...";
     conn = new ControlConnection( this );
     conn->addPeerInfo( peerInfo );
     conn->setFirstMessage( m );

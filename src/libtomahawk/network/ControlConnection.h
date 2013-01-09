@@ -49,7 +49,7 @@ public:
     Tomahawk::source_ptr source() const;
 
     void addPeerInfo( const Tomahawk::peerinfo_ptr& peerInfo );
-    const QList< Tomahawk::peerinfo_ptr > peerInfos() const;
+    const QSet< Tomahawk::peerinfo_ptr > peerInfos() const;
 
 protected:
     virtual void setup();
@@ -74,7 +74,7 @@ private:
     QTimer* m_pingtimer;
     QTime m_pingtimer_mark;
 
-    QList< Tomahawk::peerinfo_ptr > m_peerInfos;
+    QSet< Tomahawk::peerinfo_ptr > m_peerInfos;
 };
 
 #endif // CONTROLCONNECTION_H

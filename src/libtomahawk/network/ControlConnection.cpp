@@ -277,11 +277,11 @@ ControlConnection::onPingTimer()
 void
 ControlConnection::addPeerInfo( const peerinfo_ptr& peerInfo )
 {
-    m_peerInfos.append( peerInfo );
+    m_peerInfos.insert( peerInfo );
 }
 
 
-const QList< peerinfo_ptr >
+const QSet< peerinfo_ptr >
 ControlConnection::peerInfos() const
 {
     return m_peerInfos;

@@ -107,6 +107,14 @@ PeerInfo::sipPlugin() const
 }
 
 
+const QString
+PeerInfo::debugName() const
+{
+    return QString("%1 : %2").arg( sipPlugin()->account()->accountFriendlyName() ).arg( id() );
+}
+
+
+
 void
 PeerInfo::setStatus( PeerInfo::Status status )
 {
@@ -179,7 +187,7 @@ PeerInfo::setAvatar( const QPixmap& avatar )
 const QPixmap
 PeerInfo::avatar( TomahawkUtils::ImageMode style, const QSize& size ) const
 {
-    tLog() << "*****************************************" << Q_FUNC_INFO << id();
+//     tLog() << "*****************************************" << Q_FUNC_INFO << id();
 
     if ( !m_avatar && m_avatarUpdated )
     {
