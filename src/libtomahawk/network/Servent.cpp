@@ -349,18 +349,33 @@ Servent::readyRead()
     controlid = m.value( "controlid" ).toString();
 
     tDebug( LOGVERBOSE ) << "Incoming connection details:" << m;
-
     if( !nodeid.isEmpty() ) // only control connections send nodeid
     {
+        ControlConnection* match = 0;
         bool dupe = false;
         if ( m_connectedNodes.contains( nodeid ) )
+        {
+            tLog() << "connected nodes contains it, AAAHA!";
             dupe = true;
 
+        }
+        else
+        {
+            tLog() << "connected nodes dont contain it, mhhhh";
+            
+        }
+        
         foreach( ControlConnection* con, m_controlconnections )
         {
-            tLog( LOGVERBOSE ) << "known connection:" << con->id() << con->source()->friendlyName();
+            if(!con) {
+                tLog() << "!con, *sigh*";
+                continue;
+            }
+
+            tLog() << "known connection:" << con->id();
             if( con->id() == nodeid )
             {
+                match = con;
                 dupe = true;
                 break;
             }
@@ -369,13 +384,55 @@ Servent::readyRead()
         if ( dupe )
         {
             tLog() << "Duplicate control connection detected, dropping:" << nodeid << conntype;
+            
+            tLog() << "PEERINFO: fuck yeah, so what are we adding to what?!";
+            
+            tLog() << "PEERINFO: to be dropped connection has following peers";
+            ControlConnection* ccMatch = qobject_cast< ControlConnection*  >( m_offers.value( key ).data() );
+            foreach(const peerinfo_ptr& blubb, ccMatch->peerInfos() )
+            {
+                peerInfoDebug(blubb) << "***** YEAAAH *****";
+            }
+            
+            tLog() << "PEERINFO: adding to connection with following peers, comparing with ccMatch: " << ccMatch->name() << ccMatch->id() << nodeid;
+            foreach(ControlConnection* keepAround, m_controlconnections)
+            {
+                if(keepAround)
+                {
+                    tLog() << "PEERINFO: controlConnection: " << keepAround->name() << keepAround->id() << "match: " << (keepAround->id() == nodeid);
+                    
+                }
+                else
+                {
+                    tLog() << "PEERINFO: controlConnection is null";
+                }
+                
+                
+                
+                if( keepAround && keepAround->id() == nodeid )
+                {
+                    tLog() << "PEERINFO: fuuuuck yeah, this fits: " << keepAround->name();
+                    foreach(const peerinfo_ptr& blubb, keepAround->peerInfos() )
+                    {
+                        peerInfoDebug(blubb) << "**** YEAAAAAAAH ****";
+                    }
+                    
+                    foreach(const peerinfo_ptr& blubb, ccMatch->peerInfos() )
+                    {
+                        tLog() << "PEERINFO" << "adding " << blubb->id();
+                        keepAround->addPeerInfo( blubb );
+                    }
+                }
+            }
+            
+//             Q_ASSERT(false);
             goto closeconnection;
         }
     }
 
     foreach( ControlConnection* con, m_controlconnections )
     {
-        if ( con->id() == controlid )
+        if ( con && con->id() == controlid )
         {
             cc = con;
             break;
@@ -405,6 +462,8 @@ Servent::readyRead()
         }
         tDebug( LOGVERBOSE ) << "claimOffer OK:" << key << nodeid;
 
+        registerControlConnection( qobject_cast<ControlConnection*>(conn) );
+        
         m_connectedNodes << nodeid;
         if( !nodeid.isEmpty() )
             conn->setId( nodeid );

@@ -31,8 +31,9 @@
 #include <QPixmap>
 
 
-#define peerInfoDebug(peerInfo) tLog() << "PEERINFO:" << ( !peerInfo.isNull() ? peerInfo->debugName() : "Invalid PeerInfo" ).toLatin1().constData()
-
+#define peerInfoDebugNumber(peerInfo,n) tLog() << "PEERINFO" << n <<":" << ( !peerInfo.isNull() ? peerInfo->debugName() : "Invalid PeerInfo" ).toLatin1().constData()
+#define peerInfoDebug(peerInfo) peerInfoDebugNumber(peerInfo,1)
+#define peerInfoDebug2(peerInfo) peerInfoDebugNumber(peerInfo,2)
 
 class SipPlugin;
 
