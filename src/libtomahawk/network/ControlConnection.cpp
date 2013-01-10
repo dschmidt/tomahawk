@@ -128,7 +128,7 @@ ControlConnection::registerSource()
     Q_ASSERT( source == m_source.data() );
 
     m_registered = true;
-    m_servent->registerControlConnection( this );
+//     m_servent->registerControlConnection( this );
     setupDbSyncConnection();
 }
 

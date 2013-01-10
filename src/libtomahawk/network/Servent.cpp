@@ -551,7 +551,7 @@ Servent::connectToPeer( const peerinfo_ptr& peerInfo )
             conn = c;
             tLog() << "MAAAATCH, " << peerInfo->debugName() << "is already connected through the following peers:";
 
-//             bool alreadyAttached = false;
+//             boolean innerIsDupe = false;
             foreach(const peerinfo_ptr& moo, c->peerInfos())
             {
                 tLog() << "peerInfo:" << moo->debugName() << "same object: " << (peerInfo == moo) << (peerInfo.data() == moo.data()) << (peerInfo->debugName() == moo->debugName());
@@ -559,20 +559,21 @@ Servent::connectToPeer( const peerinfo_ptr& peerInfo )
                 if(peerInfo == moo)
                 {
                     isDupe = true;
+//                     innerIsDupe = true;
                     tLog() << "Not adding " << peerInfo->debugName() << ", because it's a dupe: peerInfoCount remains " << conn->peerInfos().count();
                 }
-                else
-                {
-                    c->addPeerInfo( peerInfo );
-                    peerInfoDebug(peerInfo) << "Adding " << peerInfo->debugName() << ", not a dupe... new peerInfoCount:" << c->peerInfos().count();
-                    foreach(const peerinfo_ptr& kuh, c->peerInfos())
-                    {
-                        peerInfoDebug(peerInfo) << " ** " << kuh->debugName();
-                    }
-                    break;
-                }
+                
             }
             
+            if( !isDupe )
+            {
+                c->addPeerInfo( peerInfo );
+                peerInfoDebug(peerInfo) << "Adding " << peerInfo->debugName() << ", not a dupe... new peerInfoCount:" << c->peerInfos().count();
+                foreach(const peerinfo_ptr& kuh, c->peerInfos())
+                {
+                    peerInfoDebug(peerInfo) << " ** " << kuh->debugName();
+                }
+            }
             tLog() << "";
 
             break;
@@ -613,6 +614,8 @@ Servent::connectToPeer( const peerinfo_ptr& peerInfo )
 
     conn->setProperty( "nodeid", sipInfo.uniqname() );
 
+    registerControlConnection( conn );
+    
     connectToPeer( sipInfo.host(), sipInfo.port(), sipInfo.key(), conn );
 }
 
