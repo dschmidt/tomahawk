@@ -107,6 +107,16 @@ else()
     message( STATUS "Building Tomahawk ${TOMAHAWK_VERSION} full GUI version ***" )
 endif()
 
+# First decide if Visualizer is to be built or not
+macro_optional_find_package(VSXu)
+macro_log_feature(VSXU_FOUND "VSXu" "Vovoid VSXu Audio Visual library" "http://www.vsxu.com" FALSE "" "VSXu is needed to provide cool music visualis for currently playing music.")
+
+IF( BUILD_GUI AND VSXU_FOUND )
+    ADD_DEFINITIONS(-DENABLE_VISUALIZER)
+    SET(ENABLE_VISUALIZER TRUE)
+    FIND_PACKAGE (OpenGL REQUIRED)
+    MESSAGE( STATUS "Building Tomahawk ${TOMAHAWK_VERSION} with the VSXu Music Visualizer." )
+ENDIF()
 
 find_package(Qt5Core QUIET)
 if(Qt5Core_DIR)
@@ -173,6 +183,10 @@ else()
         set(QT_USE_QTNETWORK TRUE)
         set(QT_USE_QTXML TRUE)
         set(QT_USE_QTWEBKIT TRUE)
+
+        if(ENABLE_VISUALIZER)
+          set( QT_USE_QTOPENGL TRUE )
+        endif(ENABLE_VISUALIZER)
 
         include( ${QT_USE_FILE} )
     endmacro()
@@ -245,6 +259,7 @@ set(LIBPORTFWD_INCLUDE_DIR ${THIRDPARTY_DIR}/libportfwd/include)
 set(LIBPORTFWD_LIBRARY tomahawk_portfwd)
 set(LIBPORTFWD_LIBRARIES ${LIBPORTFWD_LIBRARY})
 add_subdirectory(${THIRDPARTY_DIR}/libportfwd)
+
 
 #### submodules start
 # automatically init submodules here, don't delete this code we may add submodules again

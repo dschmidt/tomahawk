@@ -35,6 +35,9 @@
 #ifndef ENABLE_HEADLESS
     #include "TomahawkSettingsGui.h"
     #include "breakpad/BreakPad.h"
+    #ifdef Q_WS_X11 && ENABLE_VISUALIZER
+    #include <X11/Xlib.h>
+    #endif
 #endif
 
 
@@ -136,6 +139,9 @@ main( int argc, char *argv[] )
     #endif // Q_WS_MAC
 #endif //Q_OS_WIN
 
+#ifdef Q_WS_X11 && ENABLE_VISUALIZER
+    XInitThreads();
+#endif
     TomahawkApp a( argc, argv );
 
     // MUST register StateHash ****before*** initing TomahawkSettingsGui as constructor of settings does upgrade before Gui subclass registers type

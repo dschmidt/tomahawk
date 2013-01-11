@@ -133,6 +133,8 @@
         <file>data/images/jump-link.svg</file>
         <file>data/images/scrollbar-vertical-handle.png</file>
         <file>data/images/scrollbar-horizontal-handle.png</file>
+        <file>data/images/visualizer.png</file>
+        <file>data/images/visualizer-splash.png</file>
         <file>data/images/subscribe-on.svg</file>
         <file>data/images/subscribe-off.svg</file>
         <file>data/images/add-contact.svg</file>

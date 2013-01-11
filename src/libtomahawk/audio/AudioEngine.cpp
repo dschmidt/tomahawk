@@ -75,7 +75,11 @@ AudioEngine::AudioEngine()
 
     m_mediaObject = new Phonon::MediaObject( this );
     m_audioOutput = new Phonon::AudioOutput( Phonon::MusicCategory, this );
+    m_audioDataOutput = new Phonon::AudioDataOutput(this);
+
     Phonon::createPath( m_mediaObject, m_audioOutput );
+    Phonon::createPath( m_mediaObject, m_audioDataOutput );
+    connect( m_audioDataOutput, SIGNAL( dataReady( const QMap<Phonon::AudioDataOutput::Channel, QVector<qint16> >& ) ),this, SIGNAL( audioDataReady( const QMap<Phonon::AudioDataOutput::Channel, QVector<qint16> >& ) ) );
 
     m_mediaObject->setTickInterval( 150 );
     connect( m_mediaObject, SIGNAL( stateChanged( Phonon::State, Phonon::State ) ), SLOT( onStateChanged( Phonon::State, Phonon::State ) ) );

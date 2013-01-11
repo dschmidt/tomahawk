@@ -166,6 +166,12 @@ if(UNIX AND NOT APPLE AND NOT Qt5Core_DIR)
     endif()
 endif()
 
+IF(ENABLE_VISUALIZER)
+    set( libGuiSources ${libGuiSources} widgets/visualizer/VisualizerWidget.cpp widgets/visualizer/VSXuRenderer.cpp)
+    set( libGuiHeaders ${libGuiHeaders} widgets/visualizer/VisualizerWidget.h widgets/visualizer/VSXuRenderer.h)
+    include_directories( ${VSXU_INCLUDE_DIRS} )
+ENDIF(ENABLE_VISUALIZER)
+
 list(APPEND libSources
     TomahawkSettings.cpp
     SourceList.cpp
@@ -419,6 +425,11 @@ IF( APPLE )
 ELSE( APPLE )
     SET( libGuiSources ${libGuiSources} thirdparty/Qocoa/qbutton.cpp thirdparty/Qocoa/qsearchfield.cpp thirdparty/Qocoa/qtoolbartabdialog.cpp )
 ENDIF( APPLE )
+
+IF(ENABLE_VISUALIZER)
+    SET( LINK_LIBRARIES ${LINK_LIBRARIES} ${VSXU_LIBRARIES} ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARY})
+    LINK_DIRECTORIES(${VSXu_LIBRARY_DIRS})
+ENDIF(ENABLE_VISUALIZER)
 
 IF(BUILD_GUI)
     LIST(APPEND libSources ${libGuiSources} )

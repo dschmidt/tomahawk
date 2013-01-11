@@ -55,7 +55,9 @@ class NewReleasesWidget;
 class WelcomeWidget;
 class WhatsHotWidget;
 class QPushButton;
-
+#ifdef ENABLE_VISUALIZER
+class VisualizerWidget;
+#endif
 namespace Tomahawk
 {
     class DynamicWidget;
@@ -91,6 +93,9 @@ public:
     Tomahawk::ViewPage* whatsHotWidget() const;
     Tomahawk::ViewPage* newReleasesWidget() const;
     Tomahawk::ViewPage* recentPlaysWidget() const;
+#ifdef ENABLE_VISUALIZER
+    Tomahawk::ViewPage* visualizerWidget() const;
+#endif
     TreeView* superCollectionView() const;
 
     /// Get the view page for the given item. Not pretty...
@@ -130,6 +135,9 @@ public slots:
     Tomahawk::ViewPage* showWhatsHotPage();
     Tomahawk::ViewPage* showNewReleasesPage();
     Tomahawk::ViewPage* showRecentPlaysPage();
+#ifdef ENABLE_VISUALIZER
+    Tomahawk::ViewPage* showVisualizerPage();
+#endif
     void showCurrentTrack();
 
     // Returns the shown viewpage
@@ -181,6 +189,9 @@ private:
     WhatsHotWidget* m_whatsHotWidget;
     NewReleasesWidget* m_newReleasesWidget;
     Tomahawk::ViewPage* m_recentPlaysWidget;
+#ifdef ENABLE_VISUALIZER
+    Tomahawk::ViewPage* m_visualizerWidget;
+#endif
 
     QList< Tomahawk::collection_ptr > m_superCollections;
 
